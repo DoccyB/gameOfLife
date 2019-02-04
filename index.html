@@ -1,0 +1,257 @@
+<html>
+
+    <head>
+        <title>GameOfLife</title>
+        <script src="/VIBES/patterns.js"></script>
+        <script src="/VIBES/updategrid.js"></script>
+        <script src="/VIBES/input.js"></script>
+        <link href="/VIBES/css/style.css" rel="stylesheet" type = "text/css"/>
+    </head>
+
+    <body>
+        <!-- NAVIGATION BAR -->
+        <ul class="navbar">
+            <li class="inputs"><button onclick="changeInput('click')">click</button></li>
+            <li class="inputs"><button onclick="changeInput('glider')">glider</button></li>
+            <li class="inputs"><button onclick="changeInput('pulsar')">pulsar</button></li>
+            <li class="inputs"><button onclick="horizontalBar()">bar [---] </button></li>
+            
+            <li class="centerbar"><button onclick="interval()">start/stop</button></li>
+            <li class="centerbar"><button onclick="newFrame()">next frame</button></li>
+            <li class="centerbar"><button onclick="clearGrid()">clear</button></li>
+
+            <li class="gridswitch"><button onclick="gridSwitch()">grid?</button></li>
+
+            <li class="settings"><button>settings</button>
+
+            <div class="dropdown-content">
+                <a class="gridsetting">grid Size</a>
+                <div class="settings-content">
+                    <a onclick="changeGridSize(200)">200</a>
+                    <a onclick="changeGridSize(400)">400</a>
+                    <a onclick="changeGridSize(600)">600</a>
+                    <a onclick="changeGridSize(800)">800</a>
+                    <a onclick="changeGridSize(1000)">1000</a>
+                    <a onclick="changeGridSize(1200)">1200</a>
+                    <a onclick="changeGridSize(1400)">1400</a>
+                </div>
+            
+                <a class="gridsetting">cell Size</a>
+                <div class="settings-content">
+                    <a onclick="changeCellSize(1)">1</a>
+                    <a onclick="changeCellSize(2)">2</a>
+                    <a onclick="changeCellSize(5)">5</a>
+                    <a onclick="changeCellSize(10)">10</a>
+                    <a onclick="changeCellSize(20)">20</a>
+                </div>
+            
+                <a class="gridsetting">speed(fps)</a>
+                <div class="settings-content">
+                    <a onclick="changeSpeed(1)">1</a>
+                    <a onclick="changeSpeed(2)">2</a>
+                    <a onclick="changeSpeed(5)">5</a>
+                    <a onclick="changeSpeed(10)">10</a>
+                    <a onclick="changeSpeed(15)">15</a>
+                    <a onclick="changeSpeed(20)">20</a>
+                </div>
+            </div>
+            </li>
+
+        </ul>
+    
+        <!-- CANVAS -->
+        <canvas id="gol" width="600" height="300"></canvas>
+        
+        
+        <!-- JAVASCRIPT -->
+        <script>
+        
+        // Create canvas
+        window.onload=function() {
+            canv=document.getElementById("gol");
+            ctx=canv.getContext("2d");
+            document.addEventListener("keydown", keyPush);
+            document.addEventListener("mousedown", clickyClick);
+            setupGrid();
+            newFrame();
+        }
+        
+        
+        canv=document.getElementById("gol");
+
+        var visualGrid = false;
+
+        var frameInterval;
+
+        var canvHeight;
+        var canvWidth;
+        
+        // Set canvas dimensions based on window dimensions
+        var browserHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        var browserWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canv.height = browserHeight - (canv.height % 10);
+        canv.width = browserWidth - (canv.width % 10);
+        
+        
+        
+        var cellSize = 10;
+        var yCells = canvHeight / cellSize;
+        var xCells = canvWidth / cellSize;
+        var fps = 5;
+        
+        // Create list of cell coordinates (left->right, top->bottom)
+        var grid = [];
+        for (h = 0; h <= canvHeight - cellSize;h += cellSize) {
+            for (w = 0; w <= canvWidth - cellSize;w += cellSize) {
+
+                grid.push([w, h, cellSize , cellSize]);
+            }
+        }
+
+        // Create list of active cells
+        var onOff = [];
+        for (i=0; i < grid.length; i++) {
+            onOff.push(false);
+        }
+
+        
+        function setupGrid () {
+            canvHeight = canv.height - (canv.height % 10);
+            canvWidth = canv.width - (canv.width % 10);
+            
+            yCells = canvHeight / cellSize;
+            xCells = canvWidth / cellSize;
+
+
+            // Create list of cell coordinates (left->right, top->bottom)
+            grid = [];
+            for (h = 0; h <= canvHeight - cellSize;h += cellSize) {
+                for (w = 0; w <= canvWidth - cellSize;w += cellSize) {
+
+                    grid.push([w, h, cellSize , cellSize]);
+                }
+            }
+
+            // Create list of active cells
+            onOff = [];
+            for (i=0; i < grid.length; i++) {
+                onOff.push(false);
+            }
+        }
+
+
+        // hotkeys
+        function keyPush (evt) {
+            //"s" for start/stop
+            if (evt.keyCode == 83) {
+                
+                // add initial conditions to liveCells
+                if (!frameInterval) {
+                    frameInterval = setInterval(newFrame,1000 / fps);
+                } else {
+                    clearInterval(frameInterval);
+                    frameInterval = false;
+                }
+
+            //"n" for next frame
+            } else if (evt.keyCode == 78) {
+                newFrame();
+            
+            //"c" for clear grid
+            } else if (evt.keyCode == 67) {
+                clearGrid ();
+                
+            }
+        }
+        
+        function interval () {
+            
+            if (!frameInterval) {
+                frameInterval = setInterval(newFrame,1000 / fps);
+            } else {
+                clearInterval(frameInterval);
+                frameInterval = false;
+            }
+        }
+        
+        function clearGrid () {
+            for (i = 0; i < onOff.length; i ++) {
+                onOff[i] = false;
+            }
+            fillCanvas();
+        }
+        
+        function changeGridSize (size) {
+                    canv.width = size;
+                    canv.height = size / 2;
+
+                    setupGrid();
+                    fillCanvas();
+        }
+        
+        function changeCellSize (size) {
+            cellSize = size;
+
+            setupGrid();
+            fillCanvas();
+
+        }
+
+        function changeSpeed (speed) {
+            fps = speed;
+        }
+        
+        
+        function gridSwitch () {
+            if (visualGrid == false) {
+                visualGrid = true;
+            } else {
+                visualGrid = false;
+            }
+            fillCanvas();
+        }
+
+        // Fill canvas
+        function fillCanvas() {
+            ctx.fillStyle="black";
+            ctx.fillRect(0,0,canvWidth,canvHeight);
+     
+            // Create grid
+            ctx.fillStyle="#006400";
+
+            if (visualGrid == true) {
+                // x axis lines
+                for (i = canvWidth / xCells; i < canvWidth;i += canvWidth / xCells) {
+                    ctx.fillRect(i,0, 1, canvHeight);
+                }
+                //y axis lines
+                for (i = canvHeight / yCells; i < canvHeight;i += canvHeight / yCells) {
+                    ctx.fillRect(0, i, canvWidth, 1);
+                }
+            }
+        }
+        
+
+        // Display live cells
+        function displayCells () {
+            for (i = 0; i < onOff.length; i++) {
+                if (onOff[i] == true) {
+                    ctx.fillRect(grid[i][0], grid[i][1], grid[i][2], grid[i][3]);
+                }
+            }
+        }
+        
+
+        // Update grid and display cells
+        function newFrame() {
+
+            updateGrid();
+            fillCanvas();
+            displayCells();
+        }
+
+        </script>
+
+    </body>
+    
+</html>

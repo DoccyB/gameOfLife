@@ -1,0 +1,93 @@
+/*
+How this should be:
+
+navBar
+
+
+style navBar items
+-dropbtn
+-dropbutton-contents
+
+
+left/center/right
+
+hovers(?)
+
+
+ */
+
+
+body {
+    background-color: black;
+}
+
+/* navbar */
+
+
+.navbar {
+    overflow: hidden;
+    background-color: inherit;
+    font-family: monospace;
+}
+
+.navbar li {
+    display: inline-block;
+}
+
+.navbar li button {
+    font-size: 14px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 10px 5px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+    text-decoration: none;
+}
+
+.navbar li:hover {
+    background-color: #262626;
+}
+
+/* navbar dropdown content */
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 50px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: inline;
+    text-align: center;
+    font-size: 20px;
+}
+
+.settings:hover .dropdown-content {
+    display: inline-block;
+}
+
+.settings-content a:hover{
+    background-color: darkgrey;
+}
+
+/* navbar alignment */
+.inputs {
+    float: left;
+}
+.gridswitch, .settings {
+    float: right;
+    
+}
+.centerbar {
+    position: relative;
+    left: 25%;
+}
